@@ -79,42 +79,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .sent-tabs .st-tab.on{background:linear-gradient(90deg,#007AFF,#0ea5e9);color:#fff;box-shadow:0 4px 12px rgba(0,122,255,.3)}
 .sent-stage .st-badge{display:inline-block;margin-top:10px}
 .sent-stage .cl-badge{display:inline-block;margin-top:10px;margin-left:6px}
-/* 句子成分线条标注法（对标语文标准）：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语[ ] / 补语〈〉 */
+/* 句子成分标画（语文规范）：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语【 】 / 补语< >；符号统一红色，汉字保持黑色 */
 .tokens{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
-.tokens .tk-subj{text-decoration:underline double;text-decoration-color:#007AFF;text-decoration-thickness:2px;text-underline-offset:4px}
-.tokens .tk-pred{text-decoration:underline;text-decoration-color:#FF3B30;text-decoration-thickness:2.5px;text-underline-offset:4px}
-.tokens .tk-obj{text-decoration:underline wavy #34C759;text-decoration-thickness:2px;text-underline-offset:4px}
-.tokens .tk-predic::before{content:"〈";color:#FF9500;font-weight:700}
-.tokens .tk-predic::after{content:"〉";color:#FF9500;font-weight:700}
-.tokens .tk-comp::before{content:"〈";color:#FF2D55;font-weight:700}
-.tokens .tk-comp::after{content:"〉";color:#FF2D55;font-weight:700}
-.tokens .tk-attr::before{content:"(";color:#AF52DE;font-weight:700}
-.tokens .tk-attr::after{content:")";color:#AF52DE;font-weight:700}
-.tokens .tk-adv::before{content:"[";color:#0D9488;font-weight:700}
-.tokens .tk-adv::after{content:"]";color:#0D9488;font-weight:700}
+.tokens .tk-subj{text-decoration:underline double #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
+.tokens .tk-pred{text-decoration:underline #E5484D;text-decoration-thickness:2.5px;text-underline-offset:4px}
+.tokens .tk-obj{text-decoration:underline wavy #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
+.tokens .tk-predic::before{content:"<";color:#E5484D;font-weight:700}
+.tokens .tk-predic::after{content:">";color:#E5484D;font-weight:700}
+.tokens .tk-comp::before{content:"<";color:#E5484D;font-weight:700}
+.tokens .tk-comp::after{content:">";color:#E5484D;font-weight:700}
+.tokens .tk-attr::before{content:"(";color:#E5484D;font-weight:700}
+.tokens .tk-attr::after{content:")";color:#E5484D;font-weight:700}
+.tokens .tk-adv::before{content:"【";color:#E5484D;font-weight:700}
+.tokens .tk-adv::after{content:"】";color:#E5484D;font-weight:700}
 .tokens .tk-attr,.tokens .tk-adv,.tokens .tk-predic,.tokens .tk-comp{padding:0 1px}
 .mark-note{font-size:13px;color:#64748b;margin-bottom:8px;letter-spacing:.5px}
 .mark-note b{color:#007AFF}
-.sent-mark{font-size:13px;font-weight:600;color:#334155;background:#f0f7ff;border:0.5px solid rgba(0,122,255,.25);border-radius:9px;padding:7px 12px;margin-top:10px;line-height:1.7;letter-spacing:.4px}
+.sent-mark{font-size:13px;font-weight:600;color:#334155;background:#f0f7ff;border:0.5px solid rgba(0,122,255,.25);border-radius:9px;padding:8px 12px;margin-top:10px;line-height:1.9;letter-spacing:.4px}
+.sent-mark .mk-line{font-size:13.5px}
+.sent-mark .mk-line .red{color:#E5484D;font-weight:800}
+.sent-mark .mk-pos{font-size:12px;color:#64748b;font-weight:600}
 .tokens{line-height:2.4;word-break:break-word;padding-right:44px}
 .tk{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px;padding:0 2px;border-radius:6px;cursor:pointer;vertical-align:top;transition:background .15s}
 .tk:hover{background:#EEF3FA}
 .tk .w{font-size:18px;font-weight:600;line-height:1.2}
-.tk .p{font-size:10px;color:#B0B0B8;line-height:1;margin-top:1px}
+.tk .p{font-size:10px;color:#B0B0B8;line-height:1;margin-top:1px;font-weight:700}
+/* 词性配色规范：名词红 / 动词蓝 / 形绿 / 副紫 / 介青 / 连橙 / 代粉 / 数棕 / 冠灰 / 助深蓝 */
+.pc-n{color:#E5484D!important}.pc-v{color:#007AFF!important}.pc-adj{color:#16A34A!important}
+.pc-adv{color:#AF52DE!important}.pc-prep{color:#0D9488!important}.pc-conj{color:#F59E0B!important}
+.pc-pron{color:#EC4899!important}.pc-num{color:#92400E!important}.pc-art{color:#94A3B8!important}
+.pc-int{color:#DB2777!important}.pc-aux{color:#1D4ED8!important}.pc-other{color:#B0B0B8!important}
 .tk.punct{cursor:default}
 .tk.punct:hover{background:none}
 .tk.punct .w{color:var(--ink)}
-.tk-subj .w{color:#007AFF}
-.tk-pred .w{color:#FF3B30}
-.tk-obj .w{color:#34C759}
-.tk-attr .w{color:#AF52DE}
-.tk-attr{background:#F6EFFD}
-.tk-adv .w{color:#0D9488}
-.tk-adv{background:#E7F7F4}
-.tk-predic .w{color:#FF9500}
-.tk-predic{background:#FFF4E5}
-.tk-comp .w{color:#FF2D55}
-.tk-comp{background:#FDEDF3}
+/* ③句式结构视图：汉字保持黑色，成分符号（线/括号）统一红色（语文标画规范） */
+.tk-subj .w,.tk-pred .w,.tk-obj .w,.tk-attr .w,.tk-adv .w,.tk-predic .w,.tk-comp .w{color:#1e293b}
+.tk-attr,.tk-adv,.tk-predic,.tk-comp{background:none}
 .tk-func .w{color:#8E8E93;font-weight:500}
 .tk-other .w{color:#3A3A3C}
 .say{position:absolute;top:9px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:var(--blue);color:#fff;font-size:12px;cursor:pointer;box-shadow:0 3px 10px rgba(0,122,255,.35);display:flex;align-items:center;justify-content:center;padding:0 0 1px 2px;transition:transform .12s;z-index:2}
@@ -337,6 +337,9 @@ table.mega td.eg:hover{background:#F6F8FA}
 .wx-note b{color:var(--amber)}
 /* ===== 复习小游戏弹窗 ===== */
 #sentCard{max-width:min(62vw,860px);width:100%;padding:20px 26px;max-height:92vh}
+#sentStage .tk .w{font-size:inherit}
+#sentStage .tk .p{font-size:16px;margin-top:2px}
+#sentStage .sent-raw .w{font-size:inherit}
 .sent-stage{min-height:220px;padding:20px 26px;margin-top:12px}
 .sent-stage .ss{font-size:52px;line-height:2}
 .sent-raw{font-size:52px;line-height:2}
@@ -1691,7 +1694,32 @@ function tkHTML(t, unitNum, clauseSet){
   const cls=roleCls(t.role);
   const zh = (WORD_INDEX[w.toLowerCase()]||{}).zh || '';
   const cl = clauseSet&&clauseSet.has(String(w).toLowerCase())?' tk-clause':'';
-  return `<span class="tk ${cls}${cl}" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p">${esc(pos||'')}</span></span>`;
+  return `<span class="tk ${cls}${cl}" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p ${posCls(pos)}">${esc(pos||'')}</span></span>`;
+}
+/* 词性配色：返回颜色类 */
+function posCls(pos){
+  const p=String(pos||'').toLowerCase().replace(/\./g,'');
+  if(/^n/.test(p)) return 'pc-n';
+  if(/^v/.test(p)) return 'pc-v';
+  if(/^adj/.test(p)) return 'pc-adj';
+  if(/^adv/.test(p)) return 'pc-adv';
+  if(/^prep/.test(p)) return 'pc-prep';
+  if(/^conj/.test(p)) return 'pc-conj';
+  if(/^pron/.test(p)) return 'pc-pron';
+  if(/^num/.test(p)) return 'pc-num';
+  if(/^art/.test(p)) return 'pc-art';
+  if(/^int/.test(p)) return 'pc-int';
+  if(/^(aux|助)/.test(p)) return 'pc-aux';
+  return 'pc-other';
+}
+/* 结构标注版 token：单词 + 成分颜色/线条 + 彩色词性小字 */
+function tkStructHTML(t, unitNum, clauseSet){
+  const w=t.w;
+  if(!/[a-zA-Z]/.test(w)) return `<span class="tk punct"><span class="w">${esc(w)}</span></span>`;
+  const cls=roleCls(t.role);
+  const zh=(WORD_INDEX[w.toLowerCase()]||{}).zh||'';
+  const cl=clauseSet&&clauseSet.has(String(w).toLowerCase())?' tk-clause':'';
+  return `<span class="tk ${cls}${cl}" onclick="openWordModal('${esc(w)}','${esc(t.pos||'')}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p">${esc(t.pos||'')}</span></span>`;
 }
 /* 词性标注版 token（无色角色，只标词性） */
 function tkPosHTML(t, unitNum){
@@ -1699,7 +1727,7 @@ function tkPosHTML(t, unitNum){
   if(!/[a-zA-Z]/.test(w)) return `<span class="tk punct"><span class="w">${esc(w)}</span></span>`;
   const pos=t.pos;
   const zh=(WORD_INDEX[w.toLowerCase()]||{}).zh||'';
-  return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p">${esc(pos||'')}</span></span>`;
+  return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p ${posCls(pos)}">${esc(pos||'')}</span></span>`;
 }
 /* 逐句弹窗拆解：①原句 → ②词性 → ③句式结构，可放大字号 */
 let sentFont=52;
@@ -1709,10 +1737,12 @@ function openSentModal(un, si){
   const st=structTag(s), cm=clauseMark(s);
   sentFont=52;
   $('sentUnit').textContent = `Unit ${un} · 第 ${si+1} 句`;
-  /* 上部固定图例：颜色 + 线条标注法，防止孩子忘记 */
-  $('sentMark').innerHTML = '═ 主语 &nbsp;·&nbsp; ━ 谓语 &nbsp;·&nbsp; 〜 宾语 &nbsp;·&nbsp; （定语） &nbsp;·&nbsp; [ 状语 ] &nbsp;·&nbsp; 〈 表语/补语 〉 &nbsp;·&nbsp; ◆ 从句引导词';
+  /* 上部固定图例：成分符号（红色）+ 词性配色规范，防止孩子忘记 */
+  $('sentMark').innerHTML =
+    '<div class="mk-line"><span class="red">═</span> 主语 &nbsp;·&nbsp; <span class="red">━</span> 谓语 &nbsp;·&nbsp; <span class="red">〜</span> 宾语 &nbsp;·&nbsp; <span class="red">（定语）</span> &nbsp;·&nbsp; <span class="red">【状语】</span> &nbsp;·&nbsp; <span class="red">&lt;表语/补语&gt;</span> &nbsp;·&nbsp; ◆ 从句引导词</div>'
+    +'<div class="mk-pos">词性颜色：<span class="pc-n">n.名词</span> <span class="pc-v">v.动词</span> <span class="pc-adj">adj.形</span> <span class="pc-adv">adv.副</span> <span class="pc-prep">prep.介</span> <span class="pc-conj">conj.连</span> <span class="pc-pron">pron.代</span> <span class="pc-num">num.数</span> <span class="pc-art">art.冠</span> <span class="pc-aux">助动</span> ｜ 汉字黑色 · 符号红色</div>';
   const tkPos=(s.tokens||[]).map(t=>tkPosHTML(t,un)).join(' ');
-  const tkStruct=(s.tokens||[]).map(t=>tkHTML(t,un,cm&&cm.set)).join(' ');
+  const tkStruct=(s.tokens||[]).map(t=>tkStructHTML(t,un,cm&&cm.set)).join(' ');
   $('sentStage').innerHTML =
     `<div class="ss s0"><div class="ss-tag">① 原句</div><div class="sent-raw">${(s.tokens||[]).map(t=>`<span class="w">${esc(t.w)}</span>`).join(' ')}</div><div class="sent-zh">${esc(s.zh||'')}</div></div>`
     +`<div class="ss s1"><div class="ss-tag">② 词性</div><div class="tokens">${tkPos}</div></div>`
@@ -1749,10 +1779,13 @@ function sentZoom(d){
   m.addEventListener('click',function(e){ if(e.target===m) closeSentModal(); });
   $('sentClose').addEventListener('click',closeSentModal);
 })();
-/* 句式结构推断：由成分序列得到句式类型 */
+/* 句式结构推断：由成分序列得到句式类型（be 动词优先判主系表） */
 function structTag(s){
   const en=String(s.en||'');
   if(/^there\s+(is|are|was|were)/i.test(en)) return 'There be 结构';
+  const isBe=/\b(am|is|are|was|were)\b/i.test(en);
+  const isProg=/\b(am|is|are|was|were)\s+\w+ing\b/i.test(en);
+  if(isBe && !isProg) return '主系表';
   const seq=(s.tokens||[]).map(t=>t.role).filter(r=>['主语','谓语','宾语','直接宾语','间接宾语','表语','宾语补足语','宾补','补语'].includes(r))
     .map(r=>{ if(r==='主语') return 'S'; if(r==='谓语') return 'V'; if(r==='宾语'||r==='直接宾语') return 'O'; if(r==='间接宾语') return 'O2'; if(r==='表语') return 'C'; if(r==='宾语补足语'||r==='宾补'||r==='补语') return 'OC'; return ''; }).join('');
   if(seq==='SVO2O') return '主谓双宾';
