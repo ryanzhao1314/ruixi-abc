@@ -79,20 +79,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .sent-tabs .st-tab.on{background:linear-gradient(90deg,#007AFF,#0ea5e9);color:#fff;box-shadow:0 4px 12px rgba(0,122,255,.3)}
 .sent-stage .st-badge{display:inline-block;margin-top:10px}
 .sent-stage .cl-badge{display:inline-block;margin-top:10px;margin-left:6px}
-/* 句子成分标画：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语【 】 / 表语补语< >；6种符号统一红色，汉字保持黑色；词性小字按词性配色 */
-.tokens{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
-.tokens .tk-subj{text-decoration:underline double #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
-.tokens .tk-pred{text-decoration:underline #E5484D;text-decoration-thickness:2.5px;text-underline-offset:4px}
-.tokens .tk-obj{text-decoration:underline wavy #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
-.tokens .tk-predic::before{content:"<";color:#E5484D;font-weight:700}
-.tokens .tk-predic::after{content:">";color:#E5484D;font-weight:700}
-.tokens .tk-comp::before{content:"<";color:#E5484D;font-weight:700}
-.tokens .tk-comp::after{content:">";color:#E5484D;font-weight:700}
-.tokens .tk-attr::before{content:"(";color:#E5484D;font-weight:700}
-.tokens .tk-attr::after{content:")";color:#E5484D;font-weight:700}
-.tokens .tk-adv::before{content:"【";color:#E5484D;font-weight:700}
-.tokens .tk-adv::after{content:"】";color:#E5484D;font-weight:700}
-.tokens .tk-attr,.tokens .tk-adv,.tokens .tk-predic,.tokens .tk-comp{padding:0 1px}
+/* 句子成分标画：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语【 】 / 表语补语< >；符号红色，单词词性按词性配色 */
+#sentStage .tokens{display:flex;flex-wrap:wrap;gap:12px 36px;align-items:flex-start;padding-bottom:8px}
+#sentStage .tk{display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;border-radius:8px;padding:2px 5px}
+#sentStage .tk .w{font-size:25px;font-weight:600;line-height:1.5}
+#sentStage .tk .p{font-size:13px;line-height:1.3;margin-top:2px;font-weight:700}
+#sentStage .tk .br{color:#E5484D;font-weight:800}
+#sentStage .tk-cl .br{font-weight:900;font-size:1.12em}
+#sentStage .tk-clause .w .br.clw{color:#B25000;font-weight:900}
+#sentStage .tk-clause{background:none!important}
+#sentStage .tk-subj .w{text-decoration:underline double #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
+#sentStage .tk-pred .w{text-decoration:underline #E5484D;text-decoration-thickness:2.5px;text-underline-offset:4px}
+#sentStage .tk-obj .w{text-decoration:underline wavy #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
+#sentStage .tk.punct{cursor:default}
+#sentStage .tk.punct:hover{background:none}
+#sentStage .tk.punct .w{color:var(--ink)}
+#sentStage .tk-attr,#sentStage .tk-adv,#sentStage .tk-predic,#sentStage .tk-comp{background:none}
 .mark-note{font-size:13px;color:#64748b;margin-bottom:8px;letter-spacing:.5px}
 .mark-note b{color:#007AFF}
 .sent-mark{font-size:13px;font-weight:600;color:#334155;background:#f0f7ff;border:0.5px solid rgba(0,122,255,.25);border-radius:9px;padding:8px 12px;margin-top:10px;line-height:1.9;letter-spacing:.4px}
@@ -112,8 +114,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .tk.punct{cursor:default}
 .tk.punct:hover{background:none}
 .tk.punct .w{color:var(--ink)}
-/* ③句式结构视图：汉字保持黑色，成分符号（线/括号）统一红色（语文标画规范） */
-.tk-subj .w,.tk-pred .w,.tk-obj .w,.tk-attr .w,.tk-adv .w,.tk-predic .w,.tk-comp .w{color:#1e293b}
+/* ③句式结构视图：符号（线/括号）红色，单词与词性小字按词性配色 */
 .tk-attr,.tk-adv,.tk-predic,.tk-comp{background:none}
 .tk-func .w{color:#8E8E93;font-weight:500}
 .tk-other .w{color:#3A3A3C}
@@ -341,15 +342,15 @@ table.mega td.eg:hover{background:#F6F8FA}
 /* ===== 复习小游戏弹窗 ===== */
 #sentCard{max-width:min(78vw,1080px);width:100%;padding:20px 26px;max-height:94vh}
 #sentStage .tk .w{font-size:inherit}
-#sentStage .tk .p{font-size:14px;margin-top:2px}
+#sentStage .tk .p{font-size:13px;margin-top:2px}
 #sentStage .sent-raw .w{font-size:inherit}
-.sent-stage{min-height:170px;padding:16px 22px;margin-top:12px}
-.sent-stage .ss{font-size:34px;line-height:2}
-.sent-raw{font-size:34px;line-height:2}
+.sent-stage{min-height:150px;padding:16px 22px;margin-top:12px}
+.sent-stage .ss{font-size:25px;line-height:2.2}
+.sent-raw{font-size:25px;line-height:2.2}
 .sent-ops button{padding:10px 0;font-size:15px}
 .sent-tabs .st-tab{padding:11px 0;font-size:15px}
 .ss-tag{font-size:12px;padding:3px 9px;margin-bottom:8px}
-.sent-zh{font-size:18px}
+.sent-zh{font-size:17px}
 .wm.gm{max-height:82vh;display:flex;flex-direction:column;padding:18px}
 .gm-prog{font-size:12.5px;color:var(--muted);margin:10px 0 4px}
 .gm-q{font-size:19px;font-weight:800;line-height:1.5;margin:6px 0 12px;word-break:break-word;font-family:Georgia,"Times New Roman",serif}
@@ -1715,14 +1716,23 @@ function posCls(pos){
   if(/^(aux|助)/.test(p)) return 'pc-aux';
   return 'pc-other';
 }
-/* 结构标注版 token：单词 + 成分颜色/线条 + 彩色词性小字 */
-function tkStructHTML(t, unitNum, clauseSet){
+/* 结构标注版 token：固定两行单元（上=符号+单词，下=词性）；从句用｛｝加粗包裹，引导词前加◆ */
+function tkStructHTML(t, unitNum, clauseSet, inClause){
   const w=t.w;
   if(!/[a-zA-Z]/.test(w)) return `<span class="tk punct"><span class="w">${esc(w)}</span></span>`;
   const cls=roleCls(t.role);
   const zh=(WORD_INDEX[w.toLowerCase()]||{}).zh||'';
   const cl=clauseSet&&clauseSet.has(String(w).toLowerCase())?' tk-clause':'';
-  return `<span class="tk ${cls}${cl}" onclick="openWordModal('${esc(w)}','${esc(t.pos||'')}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p">${esc(t.pos||'')}</span></span>`;
+  let pre='',post='';
+  const r=t.role||'';
+  if(r==='定语'){pre='(';post=')';}
+  else if(r==='状语'){pre='【';post='】';}
+  else if(r==='表语'||r==='补语'){pre='<';post='>';}
+  const brs=pre?`<span class="br">${pre}</span>${esc(w)}<span class="br">${post}</span>`:esc(w);
+  let inner=brs;
+  if(cl) inner=`<span class="br clw">◆</span>${inner}`;
+  if(inClause) inner=`<span class="br">｛</span>${inner}<span class="br">｝</span>`;
+  return `<span class="tk ${cls}${cl}" onclick="openWordModal('${esc(w)}','${esc(t.pos||'')}','${esc(zh)}','Unit ${unitNum}')"><span class="w ${posCls(t.pos)}">${inner}</span><span class="p ${posCls(t.pos)}">${esc(t.pos||'')}</span></span>`;
 }
 /* 词性标注版 token（无色角色，只标词性） */
 function tkPosHTML(t, unitNum){
@@ -1730,22 +1740,36 @@ function tkPosHTML(t, unitNum){
   if(!/[a-zA-Z]/.test(w)) return `<span class="tk punct"><span class="w">${esc(w)}</span></span>`;
   const pos=t.pos;
   const zh=(WORD_INDEX[w.toLowerCase()]||{}).zh||'';
-  return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p ${posCls(pos)}">${esc(pos||'')}</span></span>`;
+  return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w ${posCls(pos)}">${esc(w)}</span><span class="p ${posCls(pos)}">${esc(pos||'')}</span></span>`;
 }
 /* 逐句弹窗拆解：①原句 → ②词性 → ③句式结构，可放大字号 */
-let sentFont=34;
+let sentFont=25;
 function openSentModal(un, si){
   const e=CORPUS.find(x=>x.num===un); if(!e) return;
   const s=(e.sentences||[])[si]; if(!s) return;
   const st=structTag(s), cm=clauseMark(s);
-  sentFont=34;
+  sentFont=25;
+  /* 从句范围：引导词→句末（或下一个引导词前），用于③视图大括号标注 */
+  const toks=s.tokens||[];
+  const cr={};
+  {
+    const words=toks.map(t=>String(t.w||'').toLowerCase().replace(/[^a-z]/g,''));
+    let start=-1;
+    for(let i=0;i<words.length;i++){
+      if(CLAUSE_WORDS.includes(words[i])){
+        if(start>=0){ for(let k=start;k<i;k++) cr[k]=1; }
+        start=i;
+      }
+    }
+    if(start>=0){ for(let k=start;k<words.length;k++) cr[k]=1; }
+  }
   $('sentUnit').textContent = `Unit ${un} · 第 ${si+1} 句`;
   /* 上部固定图例：6种成分符号统一红色 + 词性配色规范，防止孩子忘记 */
   $('sentMark').innerHTML =
-    '<div class="mk-line"><span class="red">═ 主语</span> &nbsp;·&nbsp; <span class="red">━ 谓语</span> &nbsp;·&nbsp; <span class="red">〜 宾语</span> &nbsp;·&nbsp; <span class="red">（定语）</span> &nbsp;·&nbsp; <span class="red">【状语】</span> &nbsp;·&nbsp; <span class="red">&lt;表语/补语&gt;</span> &nbsp;·&nbsp; ◆ 从句引导词</div>'
-    +'<div class="mk-pos">词性颜色：<span class="pc-n">n.名词</span> <span class="pc-v">v.动词</span> <span class="pc-adj">adj.形</span> <span class="pc-adv">adv.副</span> <span class="pc-prep">prep.介</span> <span class="pc-conj">conj.连</span> <span class="pc-pron">pron.代</span> <span class="pc-num">num.数</span> <span class="pc-art">art.冠</span> <span class="pc-aux">助动</span> ｜ 汉字黑色 · 符号红色</div>';
+    '<div class="mk-line"><span class="red">═ 主语</span> &nbsp;·&nbsp; <span class="red">━ 谓语</span> &nbsp;·&nbsp; <span class="red">〜 宾语</span> &nbsp;·&nbsp; <span class="red">（定语）</span> &nbsp;·&nbsp; <span class="red">【状语】</span> &nbsp;·&nbsp; <span class="red">&lt;表语/补语&gt;</span> &nbsp;·&nbsp; <span class="red">｛｝ 从句</span> &nbsp;·&nbsp; ◆ 引导词</div>'
+    +'<div class="mk-pos">词性颜色：<span class="pc-n">n.名词</span> <span class="pc-v">v.动词</span> <span class="pc-adj">adj.形</span> <span class="pc-adv">adv.副</span> <span class="pc-prep">prep.介</span> <span class="pc-conj">conj.连</span> <span class="pc-pron">pron.代</span> <span class="pc-num">num.数</span> <span class="pc-art">art.冠</span> <span class="pc-aux">助动</span> ｜ 单词·词性按颜色 · 符号红色</div>';
   const tkPos=(s.tokens||[]).map(t=>tkPosHTML(t,un)).join(' ');
-  const tkStruct=(s.tokens||[]).map(t=>tkStructHTML(t,un,cm&&cm.set)).join(' ');
+  const tkStruct=(s.tokens||[]).map((t,i)=>tkStructHTML(t,un,cm&&cm.set,!!cr[i])).join(' ');
   $('sentStage').innerHTML =
     `<div class="ss s0"><div class="ss-tag">① 原句</div><div class="sent-raw">${(s.tokens||[]).map(t=>`<span class="w">${esc(t.w)}</span>`).join(' ')}</div><div class="sent-zh">${esc(s.zh||'')}</div></div>`
     +`<div class="ss s1"><div class="ss-tag">② 词性</div><div class="tokens">${tkPos}</div></div>`
