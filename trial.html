@@ -79,10 +79,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .sent-tabs .st-tab.on{background:linear-gradient(90deg,#007AFF,#0ea5e9);color:#fff;box-shadow:0 4px 12px rgba(0,122,255,.3)}
 .sent-stage .st-badge{display:inline-block;margin-top:10px}
 .sent-stage .cl-badge{display:inline-block;margin-top:10px;margin-left:6px}
-/* 句子成分线条标注法（对标语文）：主语━ / 谓语═ / 宾语〜 / 定语( ) / 状语[ ] */
-.tokens .tk-subj{border-bottom:2px solid #007AFF;padding-bottom:1px}
-.tokens .tk-pred{border-bottom:4px double #FF3B30;padding-bottom:1px}
-.tokens .tk-obj{text-decoration:underline wavy #34C759;text-decoration-thickness:2px;text-underline-offset:3px}
+/* 句子成分线条标注法（对标语文标准）：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语[ ] / 补语〈〉 */
+.tokens{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.tokens .tk-subj{text-decoration:underline double;text-decoration-color:#007AFF;text-decoration-thickness:2px;text-underline-offset:4px}
+.tokens .tk-pred{text-decoration:underline;text-decoration-color:#FF3B30;text-decoration-thickness:2.5px;text-underline-offset:4px}
+.tokens .tk-obj{text-decoration:underline wavy #34C759;text-decoration-thickness:2px;text-underline-offset:4px}
 .tokens .tk-predic::before{content:"〈";color:#FF9500;font-weight:700}
 .tokens .tk-predic::after{content:"〉";color:#FF9500;font-weight:700}
 .tokens .tk-comp::before{content:"〈";color:#FF2D55;font-weight:700}
@@ -335,14 +336,14 @@ table.mega td.eg:hover{background:#F6F8FA}
 .wx-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:2px}
 .wx-note b{color:var(--amber)}
 /* ===== 复习小游戏弹窗 ===== */
-#sentCard{max-width:min(98vw,1700px);width:100%;padding:26px 34px;max-height:94vh}
-.sent-stage{min-height:260px;padding:24px 30px;margin-top:14px}
-.sent-stage .ss{font-size:30px;line-height:2}
-.sent-raw{font-size:30px;line-height:2}
-.sent-ops button{padding:13px 0;font-size:17px}
-.sent-tabs .st-tab{padding:14px 0;font-size:17px}
+#sentCard{max-width:min(62vw,860px);width:100%;padding:20px 26px;max-height:92vh}
+.sent-stage{min-height:220px;padding:20px 26px;margin-top:12px}
+.sent-stage .ss{font-size:52px;line-height:2}
+.sent-raw{font-size:52px;line-height:2}
+.sent-ops button{padding:11px 0;font-size:16px}
+.sent-tabs .st-tab{padding:12px 0;font-size:16px}
 .ss-tag{font-size:13px;padding:4px 10px;margin-bottom:10px}
-.sent-zh{font-size:19px}
+.sent-zh{font-size:20px}
 .wm.gm{max-height:82vh;display:flex;flex-direction:column;padding:18px}
 .gm-prog{font-size:12.5px;color:var(--muted);margin:10px 0 4px}
 .gm-q{font-size:19px;font-weight:800;line-height:1.5;margin:6px 0 12px;word-break:break-word;font-family:Georgia,"Times New Roman",serif}
@@ -1701,15 +1702,15 @@ function tkPosHTML(t, unitNum){
   return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p">${esc(pos||'')}</span></span>`;
 }
 /* 逐句弹窗拆解：①原句 → ②词性 → ③句式结构，可放大字号 */
-let sentFont=30;
+let sentFont=52;
 function openSentModal(un, si){
   const e=CORPUS.find(x=>x.num===un); if(!e) return;
   const s=(e.sentences||[])[si]; if(!s) return;
   const st=structTag(s), cm=clauseMark(s);
-  sentFont=30;
+  sentFont=52;
   $('sentUnit').textContent = `Unit ${un} · 第 ${si+1} 句`;
   /* 上部固定图例：颜色 + 线条标注法，防止孩子忘记 */
-  $('sentMark').innerHTML = '━ 主语 &nbsp;·&nbsp; ═ 谓语 &nbsp;·&nbsp; 〜 宾语 &nbsp;·&nbsp; （定语） &nbsp;·&nbsp; [ 状语 ] &nbsp;·&nbsp; 〈 表语/补语 〉 &nbsp;·&nbsp; ◆ 从句引导词';
+  $('sentMark').innerHTML = '═ 主语 &nbsp;·&nbsp; ━ 谓语 &nbsp;·&nbsp; 〜 宾语 &nbsp;·&nbsp; （定语） &nbsp;·&nbsp; [ 状语 ] &nbsp;·&nbsp; 〈 表语/补语 〉 &nbsp;·&nbsp; ◆ 从句引导词';
   const tkPos=(s.tokens||[]).map(t=>tkPosHTML(t,un)).join(' ');
   const tkStruct=(s.tokens||[]).map(t=>tkHTML(t,un,cm&&cm.set)).join(' ');
   $('sentStage').innerHTML =
@@ -1736,7 +1737,7 @@ function sentStep(t){
   });
 }
 function sentZoom(d){
-  sentFont=Math.min(68,Math.max(18,sentFont+d));
+  sentFont=Math.min(100,Math.max(20,sentFont+d));
   const stage=$('sentStage'); const t=stage.getAttribute('data-t')||'0';
   Array.prototype.forEach.call(stage.querySelectorAll('.ss'),ss=>{
     ss.style.fontSize=(ss.classList.contains('s0')?sentFont+2:sentFont)+'px';
