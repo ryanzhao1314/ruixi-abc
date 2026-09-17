@@ -79,7 +79,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .sent-tabs .st-tab.on{background:linear-gradient(90deg,#007AFF,#0ea5e9);color:#fff;box-shadow:0 4px 12px rgba(0,122,255,.3)}
 .sent-stage .st-badge{display:inline-block;margin-top:10px}
 .sent-stage .cl-badge{display:inline-block;margin-top:10px;margin-left:6px}
-/* 句子成分标画（语文规范）：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语【 】 / 补语< >；符号统一红色，汉字保持黑色 */
+/* 句子成分标画：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语【 】 / 表语补语< >；6种符号统一红色，汉字保持黑色；词性小字按词性配色 */
 .tokens{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
 .tokens .tk-subj{text-decoration:underline double #E5484D;text-decoration-thickness:2px;text-underline-offset:4px}
 .tokens .tk-pred{text-decoration:underline #E5484D;text-decoration-thickness:2.5px;text-underline-offset:4px}
@@ -121,7 +121,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .say:active{transform:scale(.85)}
 .say:focus{outline:none}
 .sent-zh{font-size:15px;color:var(--muted);margin-top:5px;line-height:1.6}
-.role-legend{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.role-legend{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;font-size:12.5px;color:#334155;font-weight:600}
+.role-legend .rg-sym{color:#E5484D;font-weight:800}
+.role-legend .rg-sep{color:#CBD5E1;margin:0 2px}
+.role-legend .rg-cl{color:#B25000;font-weight:800}
 .role-legend span{font-size:12px;padding:3px 9px;border-radius:999px;font-weight:700}
 .w-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .w-card{background:#fff;border-radius:14px;padding:11px;box-shadow:var(--shadow);cursor:pointer;transition:transform .14s;position:relative}
@@ -336,17 +339,17 @@ table.mega td.eg:hover{background:#F6F8FA}
 .wx-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:2px}
 .wx-note b{color:var(--amber)}
 /* ===== 复习小游戏弹窗 ===== */
-#sentCard{max-width:min(62vw,860px);width:100%;padding:20px 26px;max-height:92vh}
+#sentCard{max-width:min(78vw,1080px);width:100%;padding:20px 26px;max-height:94vh}
 #sentStage .tk .w{font-size:inherit}
-#sentStage .tk .p{font-size:16px;margin-top:2px}
+#sentStage .tk .p{font-size:14px;margin-top:2px}
 #sentStage .sent-raw .w{font-size:inherit}
-.sent-stage{min-height:220px;padding:20px 26px;margin-top:12px}
-.sent-stage .ss{font-size:52px;line-height:2}
-.sent-raw{font-size:52px;line-height:2}
-.sent-ops button{padding:11px 0;font-size:16px}
-.sent-tabs .st-tab{padding:12px 0;font-size:16px}
-.ss-tag{font-size:13px;padding:4px 10px;margin-bottom:10px}
-.sent-zh{font-size:20px}
+.sent-stage{min-height:170px;padding:16px 22px;margin-top:12px}
+.sent-stage .ss{font-size:34px;line-height:2}
+.sent-raw{font-size:34px;line-height:2}
+.sent-ops button{padding:10px 0;font-size:15px}
+.sent-tabs .st-tab{padding:11px 0;font-size:15px}
+.ss-tag{font-size:12px;padding:3px 9px;margin-bottom:8px}
+.sent-zh{font-size:18px}
 .wm.gm{max-height:82vh;display:flex;flex-direction:column;padding:18px}
 .gm-prog{font-size:12.5px;color:var(--muted);margin:10px 0 4px}
 .gm-q{font-size:19px;font-weight:800;line-height:1.5;margin:6px 0 12px;word-break:break-word;font-family:Georgia,"Times New Roman",serif}
@@ -1730,16 +1733,16 @@ function tkPosHTML(t, unitNum){
   return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p ${posCls(pos)}">${esc(pos||'')}</span></span>`;
 }
 /* 逐句弹窗拆解：①原句 → ②词性 → ③句式结构，可放大字号 */
-let sentFont=52;
+let sentFont=34;
 function openSentModal(un, si){
   const e=CORPUS.find(x=>x.num===un); if(!e) return;
   const s=(e.sentences||[])[si]; if(!s) return;
   const st=structTag(s), cm=clauseMark(s);
-  sentFont=52;
+  sentFont=34;
   $('sentUnit').textContent = `Unit ${un} · 第 ${si+1} 句`;
-  /* 上部固定图例：成分符号（红色）+ 词性配色规范，防止孩子忘记 */
+  /* 上部固定图例：6种成分符号统一红色 + 词性配色规范，防止孩子忘记 */
   $('sentMark').innerHTML =
-    '<div class="mk-line"><span class="red">═</span> 主语 &nbsp;·&nbsp; <span class="red">━</span> 谓语 &nbsp;·&nbsp; <span class="red">〜</span> 宾语 &nbsp;·&nbsp; <span class="red">（定语）</span> &nbsp;·&nbsp; <span class="red">【状语】</span> &nbsp;·&nbsp; <span class="red">&lt;表语/补语&gt;</span> &nbsp;·&nbsp; ◆ 从句引导词</div>'
+    '<div class="mk-line"><span class="red">═ 主语</span> &nbsp;·&nbsp; <span class="red">━ 谓语</span> &nbsp;·&nbsp; <span class="red">〜 宾语</span> &nbsp;·&nbsp; <span class="red">（定语）</span> &nbsp;·&nbsp; <span class="red">【状语】</span> &nbsp;·&nbsp; <span class="red">&lt;表语/补语&gt;</span> &nbsp;·&nbsp; ◆ 从句引导词</div>'
     +'<div class="mk-pos">词性颜色：<span class="pc-n">n.名词</span> <span class="pc-v">v.动词</span> <span class="pc-adj">adj.形</span> <span class="pc-adv">adv.副</span> <span class="pc-prep">prep.介</span> <span class="pc-conj">conj.连</span> <span class="pc-pron">pron.代</span> <span class="pc-num">num.数</span> <span class="pc-art">art.冠</span> <span class="pc-aux">助动</span> ｜ 汉字黑色 · 符号红色</div>';
   const tkPos=(s.tokens||[]).map(t=>tkPosHTML(t,un)).join(' ');
   const tkStruct=(s.tokens||[]).map(t=>tkStructHTML(t,un,cm&&cm.set)).join(' ');
@@ -1763,14 +1766,14 @@ function sentStep(t){
     b.classList.toggle('on', b.getAttribute('data-t')===String(t));
   });
   Array.prototype.forEach.call(stage.querySelectorAll('.ss'),d=>{
-    d.style.fontSize = (d.classList.contains('s0')?sentFont+2:sentFont)+'px';
+    d.style.fontSize = sentFont+'px';
   });
 }
 function sentZoom(d){
-  sentFont=Math.min(100,Math.max(20,sentFont+d));
+  sentFont=Math.min(68,Math.max(16,sentFont+d));
   const stage=$('sentStage'); const t=stage.getAttribute('data-t')||'0';
   Array.prototype.forEach.call(stage.querySelectorAll('.ss'),ss=>{
-    ss.style.fontSize=(ss.classList.contains('s0')?sentFont+2:sentFont)+'px';
+    ss.style.fontSize = sentFont+'px';
   });
 }
 (function(){
@@ -1907,7 +1910,7 @@ function renderUnit(num){
   h+=`</div>`;
   /* ③ 逐句拆解 */
   h+=`<div class="sec-title"><span class="n">3</span>逐句拆解 · 点句子弹窗学结构</div>`;
-  h+=`<div class="role-legend"><span class="tk-subj" style="color:#007AFF;background:transparent">主语</span><span class="tk-pred" style="color:#FF3B30;background:transparent">谓语</span><span class="tk-obj" style="color:#34C759;background:transparent">宾语</span><span class="tk-attr" style="color:#AF52DE">定语</span><span class="tk-adv" style="color:#0D9488">状语</span><span class="tk-predic" style="color:#FF9500">表语</span><span class="tk-comp" style="color:#FF2D55">补语</span><span class="tk-func" style="color:#8E8E93">功能词</span><span class="tk-clause" style="background:#FFF4E5;color:#B25000">从句引导词</span></div>`;
+  h+=`<div class="role-legend"><span class="rg-sym">═</span>主语<span class="rg-sep">·</span><span class="rg-sym">━</span>谓语<span class="rg-sep">·</span><span class="rg-sym">〜</span>宾语<span class="rg-sep">·</span><span class="rg-sym">（）</span>定语<span class="rg-sep">·</span><span class="rg-sym">【】</span>状语<span class="rg-sep">·</span><span class="rg-sym">&lt;&gt;</span>表语/补语<span class="rg-sep">·</span><span class="rg-cl">◆</span>从句引导词</div>`;
   h+=`<p class="game-tip">👆 点击任意句子弹窗拆解：<b>① 原句（可放大）→ ② 逐词词性 → ③ 主谓宾/主系表/从句结构</b></p>`;
   (e.sentences||[]).forEach((s,si)=>{
     h+=`<div class="sent-block" onclick="openSentModal(${e.num},${si})"><button class="say" onclick="event.stopPropagation();speak('${esc(jq(s.en||''))}',0.78)" title="朗读本句" aria-label="朗读本句">▶</button>`;
