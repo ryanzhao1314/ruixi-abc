@@ -79,6 +79,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .sent-tabs .st-tab.on{background:linear-gradient(90deg,#007AFF,#0ea5e9);color:#fff;box-shadow:0 4px 12px rgba(0,122,255,.3)}
 .sent-stage .st-badge{display:inline-block;margin-top:10px}
 .sent-stage .cl-badge{display:inline-block;margin-top:10px;margin-left:6px}
+/* 句子成分线条标注法（对标语文）：主语━ / 谓语═ / 宾语〜 / 定语( ) / 状语[ ] */
+.tokens .tk-subj{border-bottom:2px solid #007AFF;padding-bottom:1px}
+.tokens .tk-pred{border-bottom:4px double #FF3B30;padding-bottom:1px}
+.tokens .tk-obj{text-decoration:underline wavy #34C759;text-decoration-thickness:2px;text-underline-offset:3px}
+.tokens .tk-predic::before{content:"〈";color:#FF9500;font-weight:700}
+.tokens .tk-predic::after{content:"〉";color:#FF9500;font-weight:700}
+.tokens .tk-comp::before{content:"〈";color:#FF2D55;font-weight:700}
+.tokens .tk-comp::after{content:"〉";color:#FF2D55;font-weight:700}
+.tokens .tk-attr::before{content:"(";color:#AF52DE;font-weight:700}
+.tokens .tk-attr::after{content:")";color:#AF52DE;font-weight:700}
+.tokens .tk-adv::before{content:"[";color:#0D9488;font-weight:700}
+.tokens .tk-adv::after{content:"]";color:#0D9488;font-weight:700}
+.tokens .tk-attr,.tokens .tk-adv,.tokens .tk-predic,.tokens .tk-comp{padding:0 1px}
+.mark-note{font-size:13px;color:#64748b;margin-bottom:8px;letter-spacing:.5px}
+.mark-note b{color:#007AFF}
+.sent-mark{font-size:13px;font-weight:600;color:#334155;background:#f0f7ff;border:0.5px solid rgba(0,122,255,.25);border-radius:9px;padding:7px 12px;margin-top:10px;line-height:1.7;letter-spacing:.4px}
 .tokens{line-height:2.4;word-break:break-word;padding-right:44px}
 .tk{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px;padding:0 2px;border-radius:6px;cursor:pointer;vertical-align:top;transition:background .15s}
 .tk:hover{background:#EEF3FA}
@@ -319,12 +335,14 @@ table.mega td.eg:hover{background:#F6F8FA}
 .wx-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:2px}
 .wx-note b{color:var(--amber)}
 /* ===== 复习小游戏弹窗 ===== */
-#sentCard{max-width:min(94vw,1120px);width:100%;padding:22px 26px;max-height:92vh}
-.sent-stage{min-height:200px;padding:18px 22px;margin-top:12px}
-.sent-stage .ss{font-size:22px;line-height:1.9}
-.sent-raw{font-size:22px;line-height:1.9}
-.sent-ops button{padding:10px 0;font-size:14.5px}
-.sent-tabs .st-tab{padding:11px 0;font-size:15px}
+#sentCard{max-width:min(98vw,1700px);width:100%;padding:26px 34px;max-height:94vh}
+.sent-stage{min-height:260px;padding:24px 30px;margin-top:14px}
+.sent-stage .ss{font-size:30px;line-height:2}
+.sent-raw{font-size:30px;line-height:2}
+.sent-ops button{padding:13px 0;font-size:17px}
+.sent-tabs .st-tab{padding:14px 0;font-size:17px}
+.ss-tag{font-size:13px;padding:4px 10px;margin-bottom:10px}
+.sent-zh{font-size:19px}
 .wm.gm{max-height:82vh;display:flex;flex-direction:column;padding:18px}
 .gm-prog{font-size:12.5px;color:var(--muted);margin:10px 0 4px}
 .gm-q{font-size:19px;font-weight:800;line-height:1.5;margin:6px 0 12px;word-break:break-word;font-family:Georgia,"Times New Roman",serif}
@@ -481,6 +499,7 @@ table.mega td.eg:hover{background:#F6F8FA}
     <button class="close" id="sentClose">✕</button>
     <div class="u-tag" id="sentUnit"></div>
     <div class="sub">句子拆解 · ①②③ 逐步标注 · A± 放大字号</div>
+    <div class="sent-mark" id="sentMark"></div>
     <div class="sent-ops">
       <button class="seq" onclick="sentZoom(-1)">A− 缩小</button>
       <button class="seq" onclick="sentZoom(1)">A+ 放大</button>
@@ -912,9 +931,18 @@ function openWordModal(word, pos, zh, unitLabel, letterMode){
   if(af) ex+=`<div class="wx-sec"><h5>词根词缀分析</h5><div class="wx-note">${esc(af)}</div></div>`;
   $('wmExtra').innerHTML=ex;
   $('wmMask').classList.add('show');
+  /* 单词弹窗叠在句子弹窗上层（句子弹窗仍开着，关闭单词即回到句子弹窗） */
+  $('wmMask').style.zIndex='80';
   document.body.style.overflow='hidden';
 }
-function closeWm(){ $('wmMask').classList.remove('show'); document.body.style.overflow=''; speechSynthesis.cancel(); }
+function closeWm(){
+  $('wmMask').classList.remove('show');
+  $('wmMask').style.zIndex='';
+  /* 若句子弹窗仍开着则保持页面锁定 */
+  const sm=$('sentMask');
+  if(!sm || !sm.classList.contains('show')) document.body.style.overflow='';
+  speechSynthesis.cancel();
+}
 $('wmClose').onclick=closeWm;
 $('wmMask').addEventListener('click',e=>{ if(e.target===$('wmMask')) closeWm(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWm(); });
@@ -1673,13 +1701,15 @@ function tkPosHTML(t, unitNum){
   return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w">${esc(w)}</span><span class="p">${esc(pos||'')}</span></span>`;
 }
 /* 逐句弹窗拆解：①原句 → ②词性 → ③句式结构，可放大字号 */
-let sentFont=19;
+let sentFont=30;
 function openSentModal(un, si){
   const e=CORPUS.find(x=>x.num===un); if(!e) return;
   const s=(e.sentences||[])[si]; if(!s) return;
   const st=structTag(s), cm=clauseMark(s);
-  sentFont=19;
+  sentFont=30;
   $('sentUnit').textContent = `Unit ${un} · 第 ${si+1} 句`;
+  /* 上部固定图例：颜色 + 线条标注法，防止孩子忘记 */
+  $('sentMark').innerHTML = '━ 主语 &nbsp;·&nbsp; ═ 谓语 &nbsp;·&nbsp; 〜 宾语 &nbsp;·&nbsp; （定语） &nbsp;·&nbsp; [ 状语 ] &nbsp;·&nbsp; 〈 表语/补语 〉 &nbsp;·&nbsp; ◆ 从句引导词';
   const tkPos=(s.tokens||[]).map(t=>tkPosHTML(t,un)).join(' ');
   const tkStruct=(s.tokens||[]).map(t=>tkHTML(t,un,cm&&cm.set)).join(' ');
   $('sentStage').innerHTML =
@@ -1702,14 +1732,14 @@ function sentStep(t){
     b.classList.toggle('on', b.getAttribute('data-t')===String(t));
   });
   Array.prototype.forEach.call(stage.querySelectorAll('.ss'),d=>{
-    d.style.fontSize = (d.classList.contains('s0')?sentFont+1:sentFont)+'px';
+    d.style.fontSize = (d.classList.contains('s0')?sentFont+2:sentFont)+'px';
   });
 }
 function sentZoom(d){
-  sentFont=Math.min(30,Math.max(14,sentFont+d));
+  sentFont=Math.min(68,Math.max(18,sentFont+d));
   const stage=$('sentStage'); const t=stage.getAttribute('data-t')||'0';
   Array.prototype.forEach.call(stage.querySelectorAll('.ss'),ss=>{
-    ss.style.fontSize=(ss.classList.contains('s0')?sentFont+1:sentFont)+'px';
+    ss.style.fontSize=(ss.classList.contains('s0')?sentFont+2:sentFont)+'px';
   });
 }
 (function(){
