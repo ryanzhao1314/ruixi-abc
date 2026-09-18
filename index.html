@@ -1882,12 +1882,36 @@ function openSentModal(un, si){
     +(st?`<div class="st-badge">${st}</div>`:'')
     +(cm?`<div class="cl-badge">从句 ${esc(cm.w)}</div>`:'')
     +`</div>`;
-  $('sentSay').onclick=()=>speak(s.en||'',0.78);
+  $('sentSay').onclick=()=>sentSayToggle(s.en||'');
   sentStep(0);
   $('sentMask').classList.add('show');
   document.body.style.overflow='hidden';
 }
-function closeSentModal(){ document.body.style.overflow=''; $('sentMask').classList.remove('show'); speechSynthesis.cancel(); }
+function closeSentModal(){ document.body.style.overflow=''; $('sentMask').classList.remove('show'); speechSynthesis.cancel(); sentPlay='idle'; const _sb=$('sentSay'); if(_sb) _sb.textContent='▶ 朗读本句'; }
+/* 句子朗读三态：▶朗读 → ⏸暂停 → ▶继续；再点其他按钮/关闭即停止复位 */
+let sentPlay='idle';
+function sentSayToggle(txt){
+  const btn=$('sentSay'); if(!btn) return;
+  if(sentPlay==='idle'){
+    if(!txt) return;
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(String(txt));
+      if(RX_VOICE){ u.voice=RX_VOICE; u.lang=RX_VOICE.lang||'en-US'; }
+      else u.lang='en-US';
+      u.rate=0.78; u.volume=1; u.pitch=0.92;
+      u.onend=u.onerror=function(){ sentPlay='idle'; btn.textContent='▶ 朗读本句'; };
+      speechSynthesis.speak(u);
+      sentPlay='playing'; btn.textContent='⏸ 暂停';
+    }catch(e){}
+  } else if(sentPlay==='playing'){
+    try{ speechSynthesis.pause(); }catch(e){}
+    sentPlay='paused'; btn.textContent='▶ 继续';
+  } else {
+    try{ speechSynthesis.resume(); }catch(e){}
+    sentPlay='playing'; btn.textContent='⏸ 暂停';
+  }
+}
 function sentStep(t){
   const stage=$('sentStage');
   stage.setAttribute('data-t',String(t));
