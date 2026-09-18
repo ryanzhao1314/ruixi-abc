@@ -622,6 +622,28 @@ function speak(t, rate){
     speechSynthesis.speak(u);
   }catch(e){}
 }
+/* 主界面朗读三态：▶朗读 → ⏸暂停 → ▶继续（同一按钮切换；点其他按钮自动切换朗读） */
+let spBtn=null, spState='idle';
+function speakToggle(txt, btn){
+  if(!txt) return;
+  if(spBtn===btn && spState==='playing'){
+    try{ speechSynthesis.pause(); }catch(e){}
+    spState='paused'; btn.textContent='▶'; return;
+  }
+  if(spBtn===btn && spState==='paused'){
+    try{ speechSynthesis.resume(); }catch(e){}
+    spState='playing'; btn.textContent='⏸'; return;
+  }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(spBtn && spBtn!==btn) spBtn.textContent='▶';
+  const u=new SpeechSynthesisUtterance(String(txt));
+  if(RX_VOICE){ u.voice=RX_VOICE; u.lang=RX_VOICE.lang||'en-US'; }
+  else u.lang='en-US';
+  u.rate=0.78; u.volume=1; u.pitch=0.92;
+  u.onend=u.onerror=function(){ if(spBtn===btn){ spState='idle'; spBtn=null; btn.textContent='▶'; } };
+  try{ speechSynthesis.speak(u); }catch(e){}
+  spBtn=btn; spState='playing'; btn.textContent='⏸';
+}
 function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1500); }
 function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); $(id).classList.add('on'); window.scrollTo({top:0}); }
 
@@ -1756,7 +1778,7 @@ function tbRenderOut(){
   const b = TP.base[tbBase];
   const pair = TP.conv[tbBase][tbTen];
   const en = pair[0], zh = pair[1];
-  out.innerHTML = `<div class="tout-card"><div class="tout-head"><span class="tg-name">${TP.t12[tbTen][0]}</span><span class="tg-form">${esc(TP.forms[tbTen%3][Math.floor(tbTen/3)])}</span><button class="say" onclick="speak('${esc(jq(en))}',0.78)" title="朗读本句">▶</button></div>
+  out.innerHTML = `<div class="tout-card"><div class="tout-head"><span class="tg-name">${TP.t12[tbTen][0]}</span><span class="tg-form">${esc(TP.forms[tbTen%3][Math.floor(tbTen/3)])}</span><button class="say" onclick="speak('${esc(jq(en))}',this)" title="朗读本句">▶</button></div>
     <div class="tout-en">${esc(en)}</div><div class="tout-zh">${esc(zh)}</div>
     <div class="tout-base">基础句（U${b.unit}）：<button class="linkbtn" onclick="speak('${esc(jq(b.en))}')">${esc(b.en)}</button></div></div>`;
 }
@@ -1789,7 +1811,7 @@ function tbAll(){
   let h = `<div class="tall-head">「${esc(b.en)}」的 12 种时态转换</div>`;
   TP.conv[tbBase].forEach((pair,i)=>{
     const en = pair[0], zh = pair[1];
-    h += `<div class="tall-row"><span class="tg-name">${TP.t12[i][0]}</span><div class="tall-en"><button class="say sm" onclick="speak('${esc(jq(en))}',0.78)" title="朗读本句">▶</button>${esc(en)}</div><div class="tall-zh">${esc(zh)}</div></div>`;
+    h += `<div class="tall-row"><span class="tg-name">${TP.t12[i][0]}</span><div class="tall-en"><button class="say sm" onclick="speak('${esc(jq(en))}',this)" title="朗读本句">▶</button>${esc(en)}</div><div class="tall-zh">${esc(zh)}</div></div>`;
   });
   wrap.innerHTML = h;
   wrap.classList.add('open');
@@ -2066,7 +2088,7 @@ function renderUnit(num){
   h+=`<div class="role-legend"><span class="rg-sym">═</span>主语<span class="rg-sep">·</span><span class="rg-sym">━</span>谓语<span class="rg-sep">·</span><span class="rg-sym">〜</span>宾语<span class="rg-sep">·</span><span class="rg-sym">（）</span>定语<span class="rg-sep">·</span><span class="rg-sym">【】</span>状语<span class="rg-sep">·</span><span class="rg-sym">&lt;&gt;</span>表语/补语<span class="rg-sep">·</span><span class="rg-cl">◆</span>从句引导词</div>`;
   h+=`<p class="game-tip">👆 点击任意句子弹窗拆解：<b>① 原句（可放大）→ ② 逐词词性 → ③ 主谓宾/主系表/从句结构</b></p>`;
   (e.sentences||[]).forEach((s,si)=>{
-    h+=`<div class="sent-block" onclick="openSentModal(${e.num},${si})"><button class="say" onclick="event.stopPropagation();speak('${esc(jq(s.en||''))}',0.78)" title="朗读本句" aria-label="朗读本句">▶</button>`;
+    h+=`<div class="sent-block" onclick="openSentModal(${e.num},${si})"><button class="say" onclick="event.stopPropagation();speakToggle('${esc(jq(s.en||''))}',this)" title="朗读本句" aria-label="朗读本句">▶</button>`;
     h+=`<div class="sent-raw">${(s.tokens||[]).map(t=>`<span class="w">${esc(t.w)}</span>`).join(' ')}</div><div class="sent-zh">${esc(s.zh||'')}</div>`;
     h+=`<div class="sent-open">🔍 点击弹窗拆解 · 词性 / 句式结构</div></div>`;
   });
