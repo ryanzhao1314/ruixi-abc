@@ -694,6 +694,25 @@ function splitPhonics(w, letterMode){
 }
 
 /* ============ 块级音标（自然拼读，简单拆读） ============ */
+/* 音标→近似朗读文本（TTS 可读），用于点块听音与音标卡读音：合起来≈单词读音 */
+const IPA_READ={
+  'iː':'ee','ɪ':'ih','e':'eh','æ':'ah','ɑː':'ar','ɒ':'o','ɔː':'aw','ʊ':'u','uː':'oo','ʌ':'uh',
+  'ɜː':'er','ə':'uh','eɪ':'ay','aɪ':'eye','ɔɪ':'oy','əʊ':'oh','aʊ':'ow','ɪə':'eer','eə':'air','ʊə':'oor',
+  'p':'p','b':'b','t':'t','d':'d','k':'k','g':'g','f':'f','v':'v','θ':'th','ð':'th','s':'s','z':'z',
+  'ʃ':'sh','ʒ':'zh','h':'h','tʃ':'ch','dʒ':'j','tr':'tr','dr':'dr','ts':'ts','dz':'dz',
+  'm':'m','n':'n','ŋ':'ng','l':'l','r':'r','w':'w','j':'y'
+};
+function ipaRead(ipa){
+  let s=String(ipa||'').replace(/[\/\s]/g,'').replace(/\(r\)/g,'r');
+  let out=''; let i=0;
+  const keys=Object.keys(IPA_READ).sort((a,b)=>b.length-a.length);
+  while(i<s.length){
+    let m=false;
+    for(const k of keys){ if(s.startsWith(k,i)){ out+=IPA_READ[k]; i+=k.length; m=true; break; } }
+    if(!m){ out+=s[i]; i++; }
+  }
+  return out;
+}
 const PH_COMBO={
   'tion':'/ʃn/','tch':'/tʃ/','dge':'/dʒ/','ight':'/aɪt/','eigh':'/eɪ/','augh':'/ɔː/','ough':'/ɔː/','ould':'/ʊd/',
   'sh':'/ʃ/','ch':'/tʃ/','th':'/θ/','ph':'/f/','wh':'/w/','ng':'/ŋ/','ck':'/k/','qu':'/kw/','kn':'/n/','wr':'/r/',
@@ -731,9 +750,24 @@ const WORD_BLOCK_OVERRIDE={
   beautiful:['/bjuː/','/tə/','/fl/'], interesting:['/ɪn/','/trə/','/stɪŋ/'], different:['/dɪ/','/frənt/'],
   yesterday:['/je/','/stə/','/deɪ/'], tomorrow:['/tə/','/mɒ/','/rəʊ/'], together:['/tə/','/ge/','/ðə(r)/'],
   everything:['/ev/','/ri/','/θɪŋ/'], breakfast:['/brek/','/fəst/'], people:['/piː/','/pl/'],
-  uncle:['/ʌŋ/','/kl/'], little:['/lɪ/','/tl/'], dinner:['/dɪ/','/nə(r)/']
+  uncle:['/ʌŋ/','/kl/'], little:['/lɪ/','/tl/'], dinner:['/dɪ/','/nə(r)/'],
+  /* o→/ʌ/ 词族（come/love/son...字母 o 读"啊"音）与高频不规则词，块音标合起来=整词读音 */
+  come:['/k/','/ʌ/','/m/'], some:['/s/','/ʌ/','/m/'], love:['/l/','/ʌ/','/v/'], done:['/d/','/ʌ/','/n/'],
+  one:['/w/','/ʌ/','/n/'], once:['/w/','/ʌ/','/ns/'], son:['/s/','/ʌ/','/n/'], month:['/m/','/ʌ/','/nθ/'],
+  front:['/f/','/r/','/ʌ/','/nt/'], young:['/j/','/ʌ/','/ŋ/'], touch:['/t/','/ʌ/','/tʃ/'], enough:['/ɪ/','/n/','/ʌ/','/f/'],
+  country:['/kʌ/','/ntri/'], trouble:['/tr/','/ʌ/','/bl/'], double:['/d/','/ʌ/','/bl/'],
+  blood:['/b/','/l/','/ʌ/','/d/'], flood:['/f/','/l/','/ʌ/','/d/'],
+  of:['/ɒ/','/v/'], was:['/w/','/ɒ/','/z/'], what:['/w/','/ɒ/','/t/'], want:['/w/','/ɒ/','/nt/'], watch:['/w/','/ɒ/','/tʃ/'],
+  any:['/e/','/ni/'], many:['/me/','/ni/'], said:['/s/','/e/','/d/'], says:['/s/','/e/','/z/'],
+  have:['/h/','/æ/','/v/'], give:['/g/','/ɪ/','/v/'], live:['/l/','/ɪ/','/v/'], move:['/m/','/uː/','/v/'],
+  to:['/t/','/uː/'], do:['/d/','/uː/'], two:['/t/','/uː/'], who:['/h/','/uː/'], you:['/j/','/uː/'],
+  your:['/j/','/ɔː/','/r/'], four:['/f/','/ɔː/','/r/'], our:['/aʊə/','/r/'], hour:['/aʊə/','/r/'],
+  could:['/k/','/ʊ/','/d/'], would:['/w/','/ʊ/','/d/'], should:['/ʃ/','/ʊ/','/d/'], does:['/d/','/ʌ/','/z/'],
+  because:['/b/','/ɪ/','/k/','/ɒ/','/z/'], women:['/w/','/ɪ/','/m/','/ɪ/','/n/'],
+  were:['/w/','/ɜː/','/r/'], where:['/w/','/eə/','/r/'], there:['/ð/','/eə/','/r/'], here:['/h/','/ɪə/','/r/'], are:['/ɑː/','/r/'],
+  duck:['/d/','/ʌ/','/k/'], cup:['/k/','/ʌ/','/p/'], bus:['/b/','/ʌ/','/s/'], sun:['/s/','/ʌ/','/n/'], run:['/r/','/ʌ/','/n/']
 };
-function blockPh(txt, hasSilentE, wordLen, idx){
+function blockPh(txt, hasSilentE, wordLen, idx, isLast){
   txt=String(txt||'').toLowerCase();
   if(!txt) return '';
   if(BLOCK_EX[txt]) return BLOCK_EX[txt];
@@ -745,10 +779,11 @@ function blockPh(txt, hasSilentE, wordLen, idx){
   }
   const prefix=txt.slice(0,vm), v=txt[vm], suffix=txt.slice(vm+1);
   let vph;
-  if(hasSilentE && suffix.length>=1) vph=PH_VOW[v][1];          // magic-e：元音+辅音 → 长音
-  else if(suffix.length===0 && !(wordLen>=5 && prefix.length===1 && idx>0)) vph=PH_VOW[v][1]; // 开音节 → 长音
-  else if(suffix.length===0) vph=PH_VOW[v][0];                   // 多音节词中的 C+V 弱读音节
-  else vph=PH_VOW[v][0];                                          // 闭音节 → 短音
+  /* 自然拼读规则：magic-e→长音；块内闭音节→短音；块后还有块（如 duck 的 u、cat 的 a、bed 的 e）→闭音节短音；末块开音节→长音 */
+  if(hasSilentE && (suffix.length>=1 || !isLast)) vph=PH_VOW[v][1];   // magic-e：make→m·a·k(+e) 的 a→/eɪ/
+  else if(suffix.length>=1) vph=PH_VOW[v][0];                          // 块内闭音节：如 cat 若拆成 ca·t 的 a
+  else if(!isLast) vph=PH_VOW[v][0];                                   // 元音字母块后还有辅音块 → 闭音节短音
+  else vph=PH_VOW[v][1];                                               // 末块开音节 → 长音：he、we、no
   const pph=parseCons(prefix), sph=parseCons(suffix);
   return '/'+pph+vph.replace(/^\/|\/$/g,'')+sph+'/';
 }
@@ -888,12 +923,15 @@ function openWordModal(word, pos, zh, unitLabel, letterMode){
   const ov = WORD_BLOCK_OVERRIDE[wmWord.toLowerCase()] || null;
   const ovCnt = ov ? ov.length : 0;
   let oi = 0;
+  /* 最后一个非 silent 块的索引：判断开/闭音节（duck 的 u 后面还有 ck → 闭音节 /ʌ/） */
+  let lastNz = 0;
+  wmBlocks.forEach((b,i)=>{ if(!b.silent) lastNz=i; });
   $('wmBlocks').innerHTML = wmBlocks.map((b,i)=>{
     const col = b.silent ? '#c7c9d6' : BLOCK_COLORS[i%BLOCK_COLORS.length];
     let bph = '不发音';
     if(!b.silent){
       if(ov && oi<ovCnt && ovCnt===wmBlocks.filter(x=>!x.silent).length) bph = ov[oi++];
-      else bph = blockPh(b.txt, hasSE, wmWord.length, i);
+      else bph = blockPh(b.txt, hasSE, wmWord.length, i, i===lastNz);
     }
     return `<button class="wm-block${b.silent?' silent':''}" data-i="${i}" style="background:${col}" aria-label="读音块">${esc(b.txt)}<small class="wm-bph">${bph}</small></button>`;
   }).join('');
@@ -959,8 +997,11 @@ $('wmBlocks').addEventListener('click',e=>{
   if(b.classList.contains('silent')) return;
   document.querySelectorAll('.wm-block').forEach(x=>x.classList.remove('playing'));
   b.classList.add('playing');
-  const t=wmBlocks[+b.dataset.i].txt;
-  speak(t, 0.7);
+  const bl=wmBlocks[+b.dataset.i];
+  const ph=b.querySelector('.wm-bph');
+  /* 点块读该块音标的近似发音（而非字母名），如 duck 的 u 块读 /ʌ/ → "uh" */
+  const readTxt = (ph && ph.textContent && ph.textContent!=='不发音') ? ipaRead(ph.textContent) : bl.txt;
+  speak(readTxt, 0.7);
   setTimeout(()=>b.classList.remove('playing'),900);
 });
 $('wmSeq').onclick=()=>{
@@ -972,7 +1013,11 @@ $('wmSeq').onclick=()=>{
     if(idx>=wmBlocks.length){ setTimeout(()=>speak(wmWord,0.78),300); return; }
     const bl=wmBlocks[idx]; const btn=btns[idx];
     if(btn && !bl.silent){ btn.classList.add('playing'); }
-    if(!bl.silent) speak(bl.txt, 0.7);
+    if(!bl.silent){
+      const ph=btn && btn.querySelector('.wm-bph');
+      const readTxt = (ph && ph.textContent && ph.textContent!=='不发音') ? ipaRead(ph.textContent) : bl.txt;
+      speak(readTxt, 0.7);
+    }
     idx++;
     speakTimer=setTimeout(()=>{ btns.forEach(x=>x.classList.remove('playing')); step(); },1000);
   };
@@ -1062,13 +1107,16 @@ const PHONEMES={
 };
 function phonCard(p){
   const pw=PH_WORDS[p.w.toLowerCase()]||[];
-  return `<div class="phon-card"><button class="phon-s" onclick="phSay('${esc(jq(p.w))}',this)" title="点击听音标读音（${esc(p.w)} 示范）">${p.s}</button><button class="phon-w" onclick="openWordModal('${esc(jq(p.w))}','${pw[0]||''}','${esc(pw[1]||'')}','U0 音标')">${esc(p.w)}<small>${esc(p.ex||'')}</small></button>${p.tip?`<div class="phon-tip">${esc(p.tip)}</div>`:''}</div>`;
+  return `<div class="phon-card"><button class="phon-s" onclick="phSay('${esc(jq(p.s))}','${esc(jq(p.w))}',this)" title="点击读音标（/ʌ/）再听例词（duck）示范">${p.s}</button><button class="phon-w" onclick="openWordModal('${esc(jq(p.w))}','${pw[0]||''}','${esc(pw[1]||'')}','U0 音标')">${esc(p.w)}<small>${esc(p.ex||'')}</small></button>${p.tip?`<div class="phon-tip">${esc(p.tip)}</div>`:''}</div>`;
 }
-function phSay(w, el){
+function phSay(ipa, w, el){
   document.querySelectorAll('.phon-s.playing').forEach(x=>x.classList.remove('playing'));
   if(el) el.classList.add('playing');
-  speak(w, 0.72);
-  setTimeout(()=>{ if(el) el.classList.remove('playing'); }, 1100);
+  /* 先读音标本身的近似发音（/ʌ/ → uh），停顿后再慢读例词示范（duck） */
+  const ipaTxt=ipaRead(String(ipa||'').replace(/[\/\s]/g,''));
+  if(ipaTxt) speak(ipaTxt, 0.7);
+  setTimeout(()=>{ if(w) speak(w, 0.68); }, 900);
+  setTimeout(()=>{ if(el) el.classList.remove('playing'); }, 2300);
 }
 const PH_RULES=[
   {t:'一、元音字母 · 三种基本拼读', d:'先看字母个数和结尾方式，判断元音读长音还是短音', items:[
