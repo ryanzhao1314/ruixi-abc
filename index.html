@@ -82,7 +82,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 /* 句子成分标画：主语═双横线 / 谓语━单横线 / 宾语〜波浪线 / 定语( ) / 状语【 】 / 表语补语< >；符号红色，单词词性按词性配色 */
 #sentStage .tokens{display:flex;flex-wrap:wrap;gap:12px 36px;align-items:flex-start;padding-bottom:8px}
 #sentStage .tk{display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;border-radius:8px;padding:2px 5px}
-#sentStage .tk .w{font-size:25px;font-weight:600;line-height:1.5}
+#sentStage .tk .w{font-size:24px;font-weight:600;line-height:1.5}
 #sentStage .tk .p{font-size:13px;line-height:1.3;margin-top:2px;font-weight:700}
 #sentStage .tk .br{color:#E5484D;font-weight:800}
 #sentStage .tk-cl .br{font-weight:900;font-size:1.12em}
@@ -345,8 +345,8 @@ table.mega td.eg:hover{background:#F6F8FA}
 #sentStage .tk .p{font-size:13px;margin-top:2px}
 #sentStage .sent-raw .w{font-size:inherit}
 .sent-stage{min-height:150px;padding:16px 22px;margin-top:12px}
-.sent-stage .ss{font-size:25px;line-height:2.2}
-.sent-raw{font-size:25px;line-height:2.2}
+.sent-stage .ss{font-size:24px;line-height:2.2}
+.sent-raw{font-size:24px;line-height:2.2}
 .sent-ops button{padding:10px 0;font-size:15px}
 .sent-tabs .st-tab{padding:11px 0;font-size:15px}
 .ss-tag{font-size:12px;padding:3px 9px;margin-bottom:8px}
@@ -648,7 +648,8 @@ function roleCls(role){
 }
 
 /* ============ 自然拼读分段 ============ */
-const VGRP=['ee','ea','oo','oa','ai','ay','ei','ey','ou','ow','oi','oy','igh','au','aw','ew'];
+/* r 音节与元音组合优先匹配（长组合在前），辅音组合随后 */
+const VGRP=['air','are','ear','eer','oor','our','ure','ire','ore','ar','er','ir','or','ur','ee','ea','oo','oa','ai','ay','ei','ey','ou','ow','uy','oi','oy','igh','au','aw','ew'];
 const CGRP3=['tch'];
 const CGRP2=['sh','ch','th','ph','ck','ng','wh'];
 function splitPhonics(w, letterMode){
@@ -656,6 +657,12 @@ function splitPhonics(w, letterMode){
   if(!w) return [{txt:'',silent:false}];
   let silentE=false, stem=w;
   if(w.length>=3 && w.endsWith('e') && /[aeiou]/.test(w.slice(0,-1))){ silentE=true; stem=w.slice(0,-1); }
+  /* 词尾词缀优先剥离（最长匹配），如 station→sta+tion、carefully→care+ful+ly */
+  const AFFIX=['tion','sion','ture','sure','cious','tious','ment','ness','less','tive','sive','able','ible','ing','fully','ful','ly','al','ous'];
+  let suffixToks=[];
+  for(const a of AFFIX){
+    if(stem.length>a.length+1 && stem.endsWith(a)){ suffixToks=[a]; stem=stem.slice(0,-a.length); break; }
+  }
   const toks=[]; let i=0;
   while(i<stem.length){
     let matched=false;
@@ -665,6 +672,7 @@ function splitPhonics(w, letterMode){
     }
     if(!matched){ toks.push(stem[i]); i++; }
   }
+  toks.push(...suffixToks);
   if(letterMode){
     const blocks=toks.map(txt=>({txt,silent:false}));
     if(silentE) blocks.push({txt:'e',silent:true});
@@ -679,7 +687,8 @@ function splitPhonics(w, letterMode){
   if(buf.length) chunks.push(buf.join(''));
   if(chunks.length>=2){
     const last=chunks[chunks.length-1], prev=chunks[chunks.length-2];
-    if(!/[aeiouy]/.test(last) && prev.length>=2){ chunks[chunks.length-2]=prev+last; chunks.pop(); }
+    /* 仅当合并后≤3字母才合并（cat→c·a·t 退化字母级；want 保持 wa·nt 音节块） */
+    if(!/[aeiouy]/.test(last) && prev.length>=2 && (prev+last).length<=3){ chunks[chunks.length-2]=prev+last; chunks.pop(); }
   }
   const blocks=chunks.map(txt=>({txt,silent:false}));
   if(silentE) blocks.push({txt:'e',silent:true});
@@ -716,74 +725,122 @@ function ipaRead(ipa){
 const PH_COMBO={
   'tion':'/ʃn/','tch':'/tʃ/','dge':'/dʒ/','ight':'/aɪt/','eigh':'/eɪ/','augh':'/ɔː/','ough':'/ɔː/','ould':'/ʊd/',
   'sh':'/ʃ/','ch':'/tʃ/','th':'/θ/','ph':'/f/','wh':'/w/','ng':'/ŋ/','ck':'/k/','qu':'/kw/','kn':'/n/','wr':'/r/',
-  'ai':'/eɪ/','ay':'/eɪ/','ea':'/iː/','ee':'/iː/','ie':'/iː/','oa':'/əʊ/','ow':'/əʊ/','ou':'/aʊ/','oo':'/uː/','oi':'/ɔɪ/','oy':'/ɔɪ/','aw':'/ɔː/','au':'/ɔː/','ew':'/juː/','ui':'/uː/','ue':'/juː/','ar':'/ɑː(r)/','er':'/ɜː(r)/','ir':'/ɜː(r)/','or':'/ɔː(r)/','ur':'/ɜː(r)/','air':'/eə(r)/','ear':'/ɪə(r)/','are':'/eə(r)/','ure':'/ʊə(r)/','our':'/aʊə(r)/','igh':'/aɪ/','oe':'/əʊ/'
+  'ai':'/eɪ/','ay':'/eɪ/','ea':'/iː/','ee':'/iː/','ie':'/iː/','oa':'/əʊ/','ow':'/əʊ/','ou':'/aʊ/','oo':'/uː/','oi':'/ɔɪ/','oy':'/ɔɪ/','aw':'/ɔː/','au':'/ɔː/','ew':'/juː/','ui':'/uː/','ue':'/juː/','ar':'/ɑː(r)/','er':'/ɜː(r)/','ir':'/ɜː(r)/','or':'/ɔː(r)/','ur':'/ɜː(r)/','air':'/eə(r)/','ear':'/ɪə(r)/','are':'/eə(r)/','ure':'/ʊə(r)/','our':'/aʊə(r)/','igh':'/aɪ/','oe':'/əʊ/','uy':'/aɪ/',
+  /* 常见词缀读音（出现频率高，规则化处理） */
+  'tion':'/ʃn/','sion':'/ʒn/','ture':'/tʃə(r)/','sure':'/ʒə(r)/','cious':'/ʃəs/','tious':'/ʃəs/','ous':'/əs/',
+  'ful':'/fl/','less':'/ləs/','ness':'/nəs/','ment':'/mənt/','ing':'/ɪŋ/','tionally':'/ʃənəli/',
+  'ble':'/bl/','ple':'/pl/','dle':'/dl/','tle':'/tl/','gle':'/gl/','kle':'/kl/','fle':'/fl/',
+  'tive':'/tɪv/','sive':'/sɪv/','ture':'/tʃə(r)/','able':'/əbl/','ible':'/əbl/','al':'/əl/','ly':'/li/'
 };
 const PH_CONS={b:'b',c:'k',d:'d',f:'f',g:'g',h:'h',j:'dʒ',k:'k',l:'l',m:'m',n:'n',p:'p',r:'r',s:'s',t:'t',v:'v',w:'w',x:'ks',z:'z',y:'j',qu:'kw',sh:'ʃ',ch:'tʃ',th:'θ',ph:'f',wh:'w',ng:'ŋ',ck:'k',kn:'n',wr:'r'};
-const PH_VOW={a:['æ','eɪ'],e:['e','iː'],i:['ɪ','aɪ'],o:['ɒ','əʊ'],u:['ʌ','juː']};
+const PH_VOW={a:['æ','eɪ'],e:['e','iː'],i:['ɪ','aɪ'],o:['ɒ','əʊ'],u:['ʌ','juː'],y:['ɪ','aɪ']};
 const BLOCK_EX={
   vi:'/vɪ/','si':'/sɪ/','ti':'/tɪ/','ni':'/nɪ/','mi':'/mɪ/','li':'/lɪ/','pi':'/pɪ/','bi':'/bɪ/','di':'/dɪ/','gi':'/gɪ/','ki':'/kɪ/','ri':'/rɪ/','fi':'/fɪ/','hi':'/hɪ/','wi':'/wɪ/','ci':'/sɪ/',
   stu:'/stjuː/','du':'/djuː/','tu':'/tjuː/','nu':'/njuː/','mu':'/mjuː/','fu':'/fjuː/','cu':'/kjuː/','su':'/sjuː/','pu':'/pjuː/',
-  pre:'/prɪ/','pro':'/prəʊ/','per':'/pɜː(r)/','com':'/kɒm/','con':'/kɒn/','dis':'/dɪs/','un':'/ʌn/','re':'/riː/','im':'/ɪm/','ex':'/ɪks/','the':'/ðə/'
+  pre:'/prɪ/','pro':'/prəʊ/','per':'/pə(r)/','com':'/kɒm/','con':'/kɒn/','dis':'/dɪs/','un':'/ʌn/','re':'/riː/','im':'/ɪm/','ex':'/ɪks/','the':'/ðə/',
+  /* 弱读音节块（多音节词非重读）：er/ar/ur 类 → /ə(r)/，en/on/an 类 → /ən/ */
+  ver:'/və(r)/','ber':'/bə(r)/','der':'/də(r)/','ter':'/tə(r)/','ler':'/lə(r)/','mer':'/mə(r)/','ner':'/nə(r)/','ser':'/sə(r)/','fer':'/fə(r)/','ger':'/dʒə(r)/','ker':'/kə(r)/',
+  ten:'/tən/','ton':'/tən/','son':'/sən/','ren':'/rən/','pen':'/pən/','men':'/mən/','gen':'/dʒən/','den':'/dən/','len':'/lən/','zen':'/zən/','ven':'/vən/','ken':'/kən/',
+  ble:'/bl/','ple':'/pl/','dle':'/dl/','tle':'/tl/','gle':'/gl/','kle':'/kl/','fle':'/fl/','zle':'/zl/',
+  tive:'/tɪv/','sive':'/sɪv/','able':'/əbl/','ible':'/əbl/','al':'/əl/','ful':'/fl/','less':'/ləs/','ness':'/nəs/','ment':'/mənt/','ly':'/li/'
 };
 function parseCons(str){
   let s=''; let i=0;
   const keys=Object.keys(PH_CONS).sort((a,b)=>b.length-a.length);
   while(i<str.length){
+    /* 重复辅音折叠：双写字母读一个音（ff→f、ll→l、pp→p、tt→t），先于组合匹配 */
+    if(i>0 && str[i]===str[i-1]){ i++; continue; }
     let m=false;
     for(const c of keys){ if(str.substr(i,c.length)===c){ s+=PH_CONS[c]; i+=c.length; m=true; break; } }
-    if(!m){ s+=str[i]; i++; }
+    if(!m){
+      const ch=str[i], nx=str[i+1]||'';
+      /* c 在 e/i/y 前读 /s/（city→/s/、pence→/s/、face→/s/） */
+      if(ch==='c' && /[eiy]/.test(nx)) s+='s';
+      /* g 在 e/i/y 前常读 /dʒ/（age、page、gym） */
+      else if(ch==='g' && /[eiy]/.test(nx)) s+='dʒ';
+      else s+=ch;
+      i++;
+    }
   }
   return s;
 }
 /* 常见词块级音标特例（规则易错的高频词，块数与拆分块一致） */
 const WORD_BLOCK_OVERRIDE={
-  apple:['/æ/','/pl/'], study:['/stʌ/','/di/'], student:['/stjuː/','/dənt/'], family:['/fæ/','/mə/','/li/'],
+  apple:['/æ/','/pl/'], study:['/stʌ/','/di/'], student:['/stjuː/','/de/','/nt/'], family:['/fæ/','/mə/','/li/'],
   holiday:['/hɒ/','/lə/','/deɪ/'], minute:['/mɪ/','/nɪt/'], today:['/tə/','/deɪ/'], money:['/mʌ/','/ni/'],
   happy:['/hæ/','/pi/'], sorry:['/sɒ/','/ri/'], hurry:['/hʌ/','/ri/'], worry:['/wʌ/','/ri/'],
-  busy:['/bɪ/','/zi/'], city:['/sɪ/','/ti/'], very:['/ve/','/ri/'], every:['/ev/','/ri/'],
+  busy:['/bɪ/','/zi/'], city:['/sɪ/','/ti/'], very:['/ve/','/ri/'], every:['/e/','/və/','/i/'],
   open:['/əʊ/','/pən/'], seven:['/se/','/vən/'], sister:['/sɪ/','/stə(r)/'], teacher:['/tiː/','/tʃə(r)/'],
-  doctor:['/dɒ/','/ktə(r)/'], dinner:['/dɪ/','/nə(r)/'], morning:['/mɔː/','/nɪŋ/'], evening:['/iːv/','/nɪŋ/'],
-  under:['/ʌn/','/də(r)/'], other:['/ʌ/','/ðə(r)/'], nothing:['/nʌ/','/θɪŋ/'], something:['/sʌm/','/θɪŋ/'],
-  someone:['/sʌm/','/wʌn/'], again:['/ə/','/gen/'], around:['/ə/','/raʊnd/'], about:['/ə/','/baʊt/'],
+  doctor:['/dɒ/','/ktə(r)/'], dinner:['/dɪ/','/nə(r)/'], morning:['/mɔː/','/nɪŋ/'], evening:['/iː/','/v/','/nɪŋ/'],
+  under:['/ʌn/','/də(r)/'], other:['/ʌ/','/ðə(r)/'], nothing:['/nʌ/','/θɪŋ/'], something:['/sʌ/','/m/','/θɪŋ/'],
+  someone:['/sʌ/','/m/','/wʌ/','/n/'], again:['/ə/','/geɪ/','/n/'], around:['/ə/','/aʊ/','/nd/'], about:['/ə/','/baʊ/','/t/'],
   before:['/bɪ/','/fɔː(r)/'], water:['/wɔː/','/tə(r)/'], mother:['/mʌ/','/ðə(r)/'], father:['/fɑː/','/ðə(r)/'],
   brother:['/brʌ/','/ðə(r)/'], picture:['/pɪ/','/ktʃə(r)/'], future:['/fjuː/','/tʃə(r)/'], animal:['/æ/','/nɪ/','/ml/'],
-  beautiful:['/bjuː/','/tə/','/fl/'], interesting:['/ɪn/','/trə/','/stɪŋ/'], different:['/dɪ/','/frənt/'],
+  beautiful:['/bjuː/','/ə/','/tɪ/','/fl/'], interesting:['/ɪ/','/ntrə/','/ə/','/stɪŋ/'], different:['/dɪ/','/fə/','/ə/','/nt/'],
   yesterday:['/je/','/stə/','/deɪ/'], tomorrow:['/tə/','/mɒ/','/rəʊ/'], together:['/tə/','/ge/','/ðə(r)/'],
-  everything:['/ev/','/ri/','/θɪŋ/'], breakfast:['/brek/','/fəst/'], people:['/piː/','/pl/'],
+  everything:['/e/','/və/','/i/','/θɪŋ/'], breakfast:['/bre/','/kfə/','/st/'], people:['/piː/','/ə/','/pl/'],
   uncle:['/ʌŋ/','/kl/'], little:['/lɪ/','/tl/'], dinner:['/dɪ/','/nə(r)/'],
   /* o→/ʌ/ 词族（come/love/son...字母 o 读"啊"音）与高频不规则词，块音标合起来=整词读音 */
-  come:['/k/','/ʌ/','/m/'], some:['/s/','/ʌ/','/m/'], love:['/l/','/ʌ/','/v/'], done:['/d/','/ʌ/','/n/'],
-  one:['/w/','/ʌ/','/n/'], once:['/w/','/ʌ/','/ns/'], son:['/s/','/ʌ/','/n/'], month:['/m/','/ʌ/','/nθ/'],
-  front:['/f/','/r/','/ʌ/','/nt/'], young:['/j/','/ʌ/','/ŋ/'], touch:['/t/','/ʌ/','/tʃ/'], enough:['/ɪ/','/n/','/ʌ/','/f/'],
-  country:['/kʌ/','/ntri/'], trouble:['/tr/','/ʌ/','/bl/'], double:['/d/','/ʌ/','/bl/'],
-  blood:['/b/','/l/','/ʌ/','/d/'], flood:['/f/','/l/','/ʌ/','/d/'],
-  of:['/ɒ/','/v/'], was:['/w/','/ɒ/','/z/'], what:['/w/','/ɒ/','/t/'], want:['/w/','/ɒ/','/nt/'], watch:['/w/','/ɒ/','/tʃ/'],
-  any:['/e/','/ni/'], many:['/me/','/ni/'], said:['/s/','/e/','/d/'], says:['/s/','/e/','/z/'],
-  have:['/h/','/æ/','/v/'], give:['/g/','/ɪ/','/v/'], live:['/l/','/ɪ/','/v/'], move:['/m/','/uː/','/v/'],
-  to:['/t/','/uː/'], do:['/d/','/uː/'], two:['/t/','/uː/'], who:['/h/','/uː/'], you:['/j/','/uː/'],
-  your:['/j/','/ɔː/','/r/'], four:['/f/','/ɔː/','/r/'], our:['/aʊə/','/r/'], hour:['/aʊə/','/r/'],
-  could:['/k/','/ʊ/','/d/'], would:['/w/','/ʊ/','/d/'], should:['/ʃ/','/ʊ/','/d/'], does:['/d/','/ʌ/','/z/'],
-  because:['/b/','/ɪ/','/k/','/ɒ/','/z/'], women:['/w/','/ɪ/','/m/','/ɪ/','/n/'],
-  were:['/w/','/ɜː/','/r/'], where:['/w/','/eə/','/r/'], there:['/ð/','/eə/','/r/'], here:['/h/','/ɪə/','/r/'], are:['/ɑː/','/r/'],
-  duck:['/d/','/ʌ/','/k/'], cup:['/k/','/ʌ/','/p/'], bus:['/b/','/ʌ/','/s/'], sun:['/s/','/ʌ/','/n/'], run:['/r/','/ʌ/','/n/']
+  come:['/kʌm/'], some:['/sʌm/'], love:['/lʌv/'], done:['/dʌn/'],
+  one:['/wʌ/','/n/'], once:['/wʌ/','/ns/'], son:['/s/','/ʌ/','/n/'], month:['/mʌ/','/nθ/'],
+  front:['/frʌ/','/nt/'], young:['/j/','/ʌ/','/ŋ/'], touch:['/tʌ/','/tʃ/'], enough:['/e/','/nʌ/','/f/'],
+  country:['/kʌ/','/ntri/'], trouble:['/trʌ/','/bl/'], double:['/dʌ/','/bl/'],
+  blood:['/blʌ/','/d/'], flood:['/flʌ/','/d/'],
+  of:['/ɒ/','/v/'], was:['/w/','/ɒ/','/z/'], what:['/wɒ/','/t/'], want:['/wɒ/','/nt/'], watch:['/wɒ/','/tʃ/'],
+  any:['/e/','/ni/'], many:['/me/','/ni/'], said:['/se/','/d/'], says:['/se/','/z/'],
+  have:['/hæv/'], give:['/gɪv/'], live:['/lɪv/'], move:['/muːv/'],
+  to:['/tuː/'], do:['/duː/'], two:['/t/','/w/','/uː/'], who:['/h/','/uː/'], you:['/j/','/uː/'],
+  your:['/j/','/ɔː/'], four:['/f/','/ɔː/'], our:['/aʊə/'], hour:['/aʊə/','/r/'],
+  could:['/kʊ/','/d/'], would:['/wʊ/','/d/'], should:['/ʃʊ/','/d/'], does:['/d/','/ʌ/','/z/'],
+  because:['/bɪ/','/kɔː/','/s/'], women:['/wɪ/','/mɪn/'],
+  were:['/wɜː/'], where:['/weə/'], there:['/ðeə/'], here:['/hɪə/'], are:['/ɑː/'],
+  duck:['/dʌ/','/k/'], cup:['/k/','/ʌ/','/p/'], bus:['/b/','/ʌ/','/s/'], sun:['/s/','/ʌ/','/n/'], run:['/r/','/ʌ/','/n/'],
+  dumpling:['/dʌ/','/mplɪŋ/'], summer:['/sʌ/','/mə(r)/'], sudden:['/sʌ/','/dən/'], buy:['/b/','/aɪ/'], buys:['/b/','/aɪ/','/z/'],
+  /* 课文高频词特例：块音标合起来=整词读音 */
+  station:['/steɪ/','/ʃn/'], going:['/ɡəʊ/','/ɪŋ/'], wanted:['/wɒ/','/nt/','/ɪd/'],
+  telephone:['/te/','/lə/','/fəʊ/','/n/'], looked:['/lʊ/','/kt/'], outside:['/aʊ/','/tsaɪ/','/d/'],
+  pence:['/pe/','/ns/'], all:['/ɔː/','/l/'], officer:['/ɒ/','/fɪ/','/sə(r)/'],
+  railway:['/reɪ/','/weɪ/'], children:['/tʃɪ/','/ldrə/','/n/'],
+  answer:['/ɑː/','/nsə(r)/'], asked:['/ɑː/','/sk/','/t/'], stopped:['/stɒ/','/p/','/t/'], hurried:['/hʌ/','/rɪ/','/e/','/d/'],
+  refused:['/rɪ/','/fjuː/','/zd/'], couldnt:['/kʊ/','/dnt/'], wouldnt:['/wʊ/','/dnt/'], shouldnt:['/ʃʊ/','/dnt/'],
+  doesnt:['/dʌ/','/ə/','/znt/'], didnt:['/dɪ/','/dnt/'], dont:['/dəʊ/','/nt/'],
+  went:['/we/','/nt/'], saw:['/s/','/ɔː/']
 };
 function blockPh(txt, hasSilentE, wordLen, idx, isLast){
   txt=String(txt||'').toLowerCase();
   if(!txt) return '';
   if(BLOCK_EX[txt]) return BLOCK_EX[txt];
   if(PH_COMBO[txt]) return PH_COMBO[txt];
-  const vm=Math.max(txt.lastIndexOf('a'),txt.lastIndexOf('e'),txt.lastIndexOf('i'),txt.lastIndexOf('o'),txt.lastIndexOf('u'));
-  if(vm<0){
-    const c=parseCons(txt);
-    return c?('/'+c+'/'):'';
+  /* 组合优先：块内先匹配元音组合（rai→r+ai=/reɪ/、lway→l+way、ould→ou+ld） */
+  const combos=Object.keys(PH_COMBO).sort((a,b)=>b.length-a.length);
+  let comboHit=null, ci=-1;
+  for(const c of combos){
+    if(/^[aeiou]/.test(c[0])){
+      const p=txt.indexOf(c);
+      if(p>=0){ comboHit=c; ci=p; break; }
+    }
   }
-  const prefix=txt.slice(0,vm), v=txt[vm], suffix=txt.slice(vm+1);
-  let vph;
-  /* 自然拼读规则：magic-e→长音；块内闭音节→短音；块后还有块（如 duck 的 u、cat 的 a、bed 的 e）→闭音节短音；末块开音节→长音 */
-  if(hasSilentE && (suffix.length>=1 || !isLast)) vph=PH_VOW[v][1];   // magic-e：make→m·a·k(+e) 的 a→/eɪ/
-  else if(suffix.length>=1) vph=PH_VOW[v][0];                          // 块内闭音节：如 cat 若拆成 ca·t 的 a
-  else if(!isLast) vph=PH_VOW[v][0];                                   // 元音字母块后还有辅音块 → 闭音节短音
-  else vph=PH_VOW[v][1];                                               // 末块开音节 → 长音：he、we、no
+  let prefix, v, vph, suffix;
+  if(comboHit){
+    prefix=txt.slice(0,ci); v=null; suffix=txt.slice(ci+comboHit.length);
+    vph=PH_COMBO[comboHit];
+    /* c 在 e/i/y 组合前读 /s/（cer→s+er=/sə(r)/、face→f+ace） */
+    if(prefix.endsWith('c') && /^[eiy]/.test(comboHit[0])) prefix=prefix.slice(0,-1)+'s';
+    /* g 在 e/i/y 组合前读 /dʒ/（age→a+ge、page→p+age） */
+    else if(prefix.endsWith('g') && /^[eiy]/.test(comboHit[0])) prefix=prefix.slice(0,-1)+'dʒ';
+  } else {
+    const vm=Math.max(txt.lastIndexOf('a'),txt.lastIndexOf('e'),txt.lastIndexOf('i'),txt.lastIndexOf('o'),txt.lastIndexOf('u'));
+    if(vm<0){
+      const c=parseCons(txt);
+      return c?('/'+c+'/'):'';
+    }
+    prefix=txt.slice(0,vm); v=txt[vm]; suffix=txt.slice(vm+1);
+    if(v==='y') vph=(!isLast)?PH_VOW['y'][0]:(wordLen<=3?PH_VOW['y'][1]:PH_VOW['y'][0]);
+    else if(hasSilentE && (suffix.length>=1 || !isLast)) vph=PH_VOW[v][1];   // magic-e：make→m·a·k(+e) 的 a→/eɪ/
+    else if(suffix.length>=1) vph=PH_VOW[v][0];                          // 块内闭音节：如 cat 若拆成 ca·t 的 a
+    else if(!isLast) vph=PH_VOW[v][0];                                   // 元音字母块后还有辅音块 → 闭音节短音
+    else vph=PH_VOW[v][1];                                               // 末块开音节 → 长音：he、we、no
+  }
   const pph=parseCons(prefix), sph=parseCons(suffix);
   return '/'+pph+vph.replace(/^\/|\/$/g,'')+sph+'/';
 }
@@ -1791,12 +1848,12 @@ function tkPosHTML(t, unitNum){
   return `<span class="tk" onclick="openWordModal('${esc(w)}','${esc(pos)}','${esc(zh)}','Unit ${unitNum}')"><span class="w ${posCls(pos)}">${esc(w)}</span><span class="p ${posCls(pos)}">${esc(pos||'')}</span></span>`;
 }
 /* 逐句弹窗拆解：①原句 → ②词性 → ③句式结构，可放大字号 */
-let sentFont=25;
+let sentFont=24;
 function openSentModal(un, si){
   const e=CORPUS.find(x=>x.num===un); if(!e) return;
   const s=(e.sentences||[])[si]; if(!s) return;
   const st=structTag(s), cm=clauseMark(s);
-  sentFont=25;
+  sentFont=24;
   /* 从句范围：引导词→句末（或下一个引导词前），用于③视图大括号标注 */
   const toks=s.tokens||[];
   const cr={};
